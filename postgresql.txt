@@ -1,0 +1,89 @@
+// Replication:
+// - master-slave (one sync + async)
+// - replication factor 3
+//
+// Sharding:
+// - key based by user_id
+
+Table Users {
+  id integer [pk, not null]
+  nickname varchar [not null, unique]
+  bio text
+  avatar_object_key varchar
+}
+
+Table Posts {
+  id integer [pk, not null]
+  text text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp 
+  author_id integer [not null]
+  location_id integer [not null]
+  Indexes {
+    (author_id, created_at, id)
+    (location_id, created_at, id)
+  }
+}
+
+Table Locations {
+  id integer [pk, not null]
+  name varchar [not null, unique]
+}
+
+Table Posts_photos {
+  id integer [pk, not null]
+  post_object_key varchar [not null]
+  order_index integer [not null]
+  created_at timestamp [not null, default: `now()`]
+  post_id integer [not null]
+  Indexes {
+    (post_id, order_index) [unique]
+    (post_id, post_object_key) [unique]
+  }
+}
+
+Table Likes {
+  post_id integer [not null]
+  user_id integer [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  Indexes {
+    (post_id, user_id) [pk]
+  }
+}
+
+Table Comments {
+  id integer [pk, not null]
+  text text [not null]
+  post_id integer [not null]
+  author_id integer [not null]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
+  Indexes {
+    (post_id, created_at, id)
+  }
+}
+
+Table Subscriptions {
+  follower_id integer [not null]
+  following_id integer [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  Indexes {
+    (follower_id, following_id) [pk]
+    (following_id, follower_id)
+  }
+}
+
+Ref: Users.id < Posts.author_id
+Ref: Locations.id < Posts.location_id
+Ref: Posts.id < Posts_photos.post_id
+
+Ref: Posts.id < Likes.post_id
+Ref: Users.id < Likes.user_id
+
+Ref: Posts.id < Comments.post_id
+Ref: Users.id < Comments.author_id
+
+Ref: Users.id < Subscriptions.follower_id
+Ref: Users.id < Subscriptions.following_id

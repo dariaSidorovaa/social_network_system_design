@@ -1,0 +1,30 @@
+// Replication:
+// - replication factor 3
+
+1. Object Storage используется для хранения медиафайлов:
+— аватары пользователей;
+— фотографии в постах.
+
+2. Структура хранения:
+   2.1 Хранилище: S3-compatible (AWS S3 / MinIO / Yandex Object Storage и т.п.).
+   2.2 Доступ к объектам - bucket + object_key.
+       2.3 Bucket: travel-social-media
+       2.4 Object_key:
+           2.4.1 Аватары - avatars/{user_id}/{avatar_id}.{ext}, где avatar_id - uuid/ulid/хеш, ext - исходное расширение;
+           2.4.2 Фото постов - posts/{post_id}/{photo_id}.{ext}, где post_id - uuid/ulid/хеш, ext - исходное расширение.
+
+3. Модель доступа к файлам (контент публичный):
+  3.1 Bucket: private (запись запрещена извне)
+  3.2 Upload: через backend
+  3.3 Download: напрямую через CDN
+
+4. Ограничения:
+   4.1 допустимые форматы: jpg/png/webp
+   4.2 лимит размера:
+	  4.2.1 аватар: до 5–10 MB
+	  4.2.2 фото поста: до 10–20 MB
+
+5. Интеграция с Postgresql:
+  5.1 В Postgresql хранится только object_key — строковый идентификатор файла в Object Storage (users.avatar_object_key, posts_photos.post_object_key). Физические файлы хранятся в Object Storage.
+  5.2 Backend после успешной загрузки файла в Object Storage сохраняет object_key в Postgresql.
+  5.3 При удалении сущности backend удаляет запись из Postgresql и соответствующий объект в Object Storage.

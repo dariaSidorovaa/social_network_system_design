@@ -1,0 +1,773 @@
+openapi: 3.1.0
+info:
+  title: Travel Social Network API
+  version: 1.0.0
+  description: >
+    REST API for a travel social network. Authentication/authorization is out of scope.
+
+servers:
+  - url: /api/v1
+
+tags:
+  - name: Users
+  - name: Posts
+  - name: Subscriptions
+  - name: Likes
+  - name: Comments
+  - name: Locations
+
+paths:
+  /users:
+    post:
+      tags: [Users]
+      summary: Create a user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreateRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserCreateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /users/{user_id}:
+    get:
+      tags: [Users]
+      summary: Get a user
+      operationId: getUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      tags: [Users]
+      summary: Update a user
+      operationId: patchUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "204":
+          description: User updated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      operationId: deleteUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "204":
+          description: User deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{user_id}/posts:
+    get:
+      tags: [Posts]
+      summary: Get user's posts
+      operationId: getUserPosts
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: User's posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /posts:
+    post:
+      tags: [Posts]
+      summary: Create a post
+      operationId: createPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostCreateRequest"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostCreateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /posts/{post_id}:
+    get:
+      tags: [Posts]
+      summary: Get a post
+      operationId: getPost
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: Post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      tags: [Posts]
+      summary: Update a post
+      operationId: patchPost
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUpdateRequest"
+      responses:
+        "204":
+          description: Post updated
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags: [Posts]
+      summary: Delete a post
+      operationId: deletePost
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "204":
+          description: Post deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{user_id}/following:
+    get:
+      tags: [Subscriptions]
+      summary: Get user's subscriptions
+      operationId: getUserSubscriptions
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: User's subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{user_id}/followers:
+    get:
+      tags: [Subscriptions]
+      summary: Get user's followers
+      operationId: getUserFollowers
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: User's followers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{user_id}/following/{target_user_id}:
+    put:
+      tags: [Subscriptions]
+      summary: Follow a user
+      operationId: followUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/TargetUserId"
+      responses:
+        "204":
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags: [Subscriptions]
+      summary: Unfollow a user
+      operationId: unfollowUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/TargetUserId"
+      responses:
+        "204":
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /users/{user_id}/feed:
+    get:
+      tags: [Subscriptions]
+      summary: Get personal feed
+      operationId: getUserFeed
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Cursor"
+      responses:
+        "200":
+          description: User's feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /posts/{post_id}/likes:
+    get:
+      tags: [Likes]
+      summary: Get post's likes
+      operationId: getPostLikes
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Likes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Like"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /posts/{post_id}/likes/{user_id}:
+    put:
+      tags: [Likes]
+      summary: Like a post
+      operationId: likePost
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "204":
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags: [Likes]
+      summary: Remove like from a post
+      operationId: removeLike
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "204":
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /posts/{post_id}/comments:
+    get:
+      tags: [Comments]
+      summary: Get post's comments
+      operationId: getComments
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+      responses:
+        "200":
+          description: Comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    post:
+      tags: [Comments]
+      summary: Post a comment
+      operationId: postComment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentCreateRequest"
+      responses:
+        "201":
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentCreateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /posts/{post_id}/comments/{comment_id}:
+    patch:
+      tags: [Comments]
+      summary: Update a comment
+      operationId: updateComment
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+        - $ref: "#/components/parameters/CommentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentUpdateRequest"
+      responses:
+        "204":
+          description: Successful operation
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags: [Comments]
+      summary: Delete a comment
+      operationId: deleteComment
+      parameters:
+        - $ref: "#/components/parameters/PostId"
+        - $ref: "#/components/parameters/CommentId"
+      responses:
+        "204":
+          description: Comment deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /locations/search:
+    get:
+      tags: [Locations]
+      summary: Search locations
+      operationId: searchLocations
+      parameters:
+        - $ref: "#/components/parameters/LocationQuery"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+
+  /locations/{location_id}/posts:
+    get:
+      tags: [Locations]
+      summary: Get posts by location
+      operationId: getPostsByLocation
+      parameters:
+        - $ref: "#/components/parameters/LocationId"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Posts filtered by location
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /locations/popular:
+    get:
+      tags: [Locations]
+      summary: Get popular locations
+      operationId: getPopularLocations
+      parameters:
+        - $ref: "#/components/parameters/LocationQuery"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Popular locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationWithStats"
+
+components:
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+      example: 12345678
+
+    TargetUserId:
+      name: target_user_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+      example: 12345678
+
+    PostId:
+      name: post_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+      example: 12345678
+
+    CommentId:
+      name: comment_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+      example: 12345678
+
+    LocationId:
+      name: location_id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int32
+      example: 12345678
+
+    LocationQuery:
+      name: q
+      in: query
+      schema:
+        type: string
+        minLength: 1
+      example: "los angeles"
+
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+
+  schemas:
+    UserCreateRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+          example: "taylorSwift"
+        bio:
+          type: string
+          example: "Singer"
+        avatar_url:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+      required: [nickname]
+
+    UserCreateResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int32
+          example: 12345678
+      required: [user_id]
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+          example: "taylorSwift"
+        bio:
+          type: string
+          example: "Singer"
+        avatar_url:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 12345678
+        nickname:
+          type: string
+          example: "taylorSwift"
+        bio:
+          type: string
+          example: "Singer"
+        avatar_url:
+          type: string
+          format: uri
+          example: "https://example.com/avatar.jpg"
+      required: [id, nickname]
+
+    UserRef:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 12345678
+        nickname:
+          type: string
+          example: "taylorSwift"
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 12345678
+        text:
+          type: string
+          example: "summer in the city of angels"
+        photo_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          examples:
+            - ["https://example1.com/.jpg", "https://example2.com/.jpg"]
+        created_at:
+          type: string
+          format: date-time
+          examples: ["2026-01-14T11:00:00Z"]
+        author:
+          $ref: "#/components/schemas/UserRef"
+        location:
+          $ref: "#/components/schemas/Location"
+      required: [id, author, photo_urls, location]
+
+    PostCreateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "summer in the city of angels"
+        photo_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          examples:
+            - ["https://example1.com/.jpg", "https://example2.com/.jpg"]
+        location:
+          $ref: "#/components/schemas/Location"
+      required: [photo_urls, location]
+
+    PostCreateResponse:
+      type: object
+      properties:
+        post_id:
+          type: integer
+          format: int32
+          example: 12345678
+      required: [post_id]
+
+    PostUpdateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "summer in the city of angels"
+        photo_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+          examples:
+            - ["https://example1.com/.jpg", "https://example2.com/.jpg"]
+        location:
+          $ref: "#/components/schemas/Location"
+
+    Like:
+      type: object
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          examples: ["2026-01-14T11:00:00Z"]
+        author:
+          $ref: "#/components/schemas/UserRef"
+      required: [created_at, author]
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 12345678
+        text:
+          type: string
+          example: "splendid view!"
+        created_at:
+          type: string
+          format: date-time
+          examples: ["2026-01-14T11:00:00Z"]
+        author:
+          $ref: "#/components/schemas/UserRef"
+      required: [id, text, created_at, author]
+
+    CommentCreateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "splendid view!"
+      required: [text]
+
+    CommentCreateResponse:
+      type: object
+      properties:
+        comment_id:
+          type: integer
+          format: int32
+          example: 12345678
+      required: [comment_id]
+
+    CommentUpdateRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          example: "splendid view!"
+
+    Location:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 12345678
+        name:
+          type: string
+          example: "Los Angeles"
+      required: [id, name]
+
+    LocationWithStats:
+      allOf:
+        - $ref: "#/components/schemas/Location"
+        - type: object
+          properties:
+            posts_count:
+              type: integer
+              format: int32
+              example: 125430
+          required: [posts_count]
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 400
+              message:
+                type: string
+                example: Bad Request
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    object_id:
+                      type:
+                        - integer
+                        - "null"
+                      format: int32
+                      example: 12345678
+                    field:
+                      type:
+                        - string
+                        - "null"
+                      example: nickname
+                    message:
+                      type: string
+                      example: Value must not be empty.
+    NotFound:
+      description: The specified resource wasn't found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 404
+              message:
+                type: string
+                example: Not found
+            required: [code, message]
