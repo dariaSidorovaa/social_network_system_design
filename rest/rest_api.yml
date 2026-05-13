@@ -15,6 +15,7 @@ tags:
   - name: Likes
   - name: Comments
   - name: Locations
+  - name: Media
 
 paths:
   /users:
@@ -332,6 +333,8 @@ paths:
       tags: [Comments]
       summary: Post a comment
       operationId: postComment
+      parameters:
+        - $ref: "#/components/parameters/PostId"
       requestBody:
         required: true
         content:
@@ -436,6 +439,28 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/LocationWithStats"
+  
+  /media/upload_url:
+    post:
+      tags: [Media]
+      summary: Get presigned URL for media upload
+      operationId: getUploadUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "201":
+          description: URL created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
 
 components:
   parameters:
@@ -721,6 +746,30 @@ components:
               format: int32
               example: 125430
           required: [posts_count]
+
+    UploadUrlRequest:
+      type: object
+      properties:
+        content_type:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+          example: "image/jpeg"
+        purpose:
+          type: string
+          example: "post_photo"
+      required: [content_type, purpose]
+
+    UploadUrlResponse:
+      type: object
+      properties:
+        upload_url:
+          type: string
+          format: uri
+          example: "https://s3.example.com/bucket/posts/123/uuid.jpg?X-Amz-Signature=..."
+        object_key:
+          type: string
+          example: "posts/123/uuid.jpg"
+      required: [upload_url, object_key]
 
   responses:
     BadRequest:
